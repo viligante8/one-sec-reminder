@@ -161,129 +161,419 @@ const runOneSecDelay = (delaySeconds = 3, isScrollTrigger = false) => {
       }
     }, 1000);
     
-    // Add friction based on skip count
-    if (siteSkipCount < 3) {
-      // Normal button for first few skips
-      continueButton.addEventListener('click', () => {
-        overlay.remove();
-        updateSkipCount();
-        showPageContent();
-        setTimeout(() => startScrollTracking(), 1000);
-      });
-    } else if (siteSkipCount < 6) {
-      // Moving button - runs away from cursor MUCH more aggressively
-      continueButton.style.position = 'relative';
-      continueButton.style.transition = 'all 0.2s ease';
-      continueButton.textContent = 'Try to click me! 😈';
-      
-      let moveCount = 0;
-      const maxMoves = 8; // Increased from 3 to 8
-      
-      const moveButton = () => {
-        if (moveCount < maxMoves) {
-          // Much larger movement range
-          const randomX = (Math.random() - 0.5) * 300; // Increased from 100 to 300
-          const randomY = (Math.random() - 0.5) * 200; // Increased from 50 to 200
-          continueButton.style.transform = `translate(${randomX}px, ${randomY}px)`;
-          moveCount++;
-          
-          const messages = [
-            `Nope! Try again! (${maxMoves - moveCount} left)`,
-            `Missed me! (${maxMoves - moveCount} left)`,
-            `Too slow! (${maxMoves - moveCount} left)`,
-            `Can't catch me! (${maxMoves - moveCount} left)`,
-            `Keep trying! (${maxMoves - moveCount} left)`,
-            `Almost there! (${maxMoves - moveCount} left)`,
-            `So close! (${maxMoves - moveCount} left)`,
-            `One more time! (${maxMoves - moveCount} left)`
-          ];
-          
-          continueButton.textContent = messages[moveCount - 1] || `Stop running! (${maxMoves - moveCount} more moves)`;
-        } else {
-          continueButton.textContent = 'Fine, you caught me! 😤';
-          continueButton.style.transform = 'translate(0, 0)';
-        }
-      };
-      
-      // Move on hover AND on click attempts
-      continueButton.addEventListener('mouseenter', moveButton);
-      continueButton.addEventListener('mouseover', moveButton);
-      continueButton.addEventListener('click', () => {
-        if (moveCount >= maxMoves) {
-          overlay.remove();
-          updateSkipCount();
-          showPageContent();
-          setTimeout(() => startScrollTracking(), 1000);
-        } else {
-          moveButton();
-        }
-      });
+    // Modular friction system - easily reorderable
+    const frictionLevels = [
+      { range: [0, 1], type: 'timer' },           // Level 1: Timer (skip 0-1)
+      { range: [2, 3], type: 'fakeLoading' },     // Level 2: Fake loading (skip 2-3)
+      { range: [4, 7], type: 'fakeButtons' },     // Level 3: Fake buttons (skip 4-7)
+      { range: [8, 11], type: 'hotCold' },        // Level 4: Hot/cold invisible (skip 8-11)
+      { range: [12, 999], type: 'movingButton' }  // Level 5: Moving button (skip 12+)
+    ];
+    
+    // Find current friction level
+    const currentLevel = frictionLevels.find(level => 
+      siteSkipCount >= level.range[0] && siteSkipCount <= level.range[1]
+    );
+    
+    // Execute the appropriate friction method
+    if (currentLevel) {
+      executeFriction(currentLevel.type, overlay, continueButton, siteSkipCount);
     } else {
-      // Math puzzle for high skip counts
-      const num1 = Math.floor(Math.random() * 10) + 1;
-      const num2 = Math.floor(Math.random() * 10) + 1;
-      const answer = num1 + num2;
-      
-      continueButton.style.display = 'none';
-      
-      const puzzleDiv = document.createElement('div');
-      puzzleDiv.style.textAlign = 'center';
-      puzzleDiv.style.marginTop = '20px';
-      puzzleDiv.innerHTML = `
-        <p style="color: #ff4444; font-weight: bold; margin-bottom: 10px;">Solve this to prove you're not a mindless zombie:</p>
-        <p style="font-size: 18px; margin-bottom: 10px;">${num1} + ${num2} = ?</p>
-        <input type="number" id="math-answer" style="padding: 8px; border: 2px solid #ddd; border-radius: 4px; width: 80px; text-align: center; font-size: 16px;" placeholder="?"><br>
-        <button id="submit-answer" style="margin-top: 10px; padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">Submit</button>
-        <p id="wrong-answer" style="color: #ff4444; font-size: 12px; margin-top: 5px; display: none;">Wrong! Try again, genius. 🤦‍♂️</p>
-      `;
-      
-      continueButton.parentNode.appendChild(puzzleDiv);
-      
-      const submitButton = puzzleDiv.querySelector('#submit-answer');
-      const answerInput = puzzleDiv.querySelector('#math-answer');
-      const wrongMessage = puzzleDiv.querySelector('#wrong-answer');
-      
-      const checkAnswer = () => {
-        const userAnswer = parseInt(answerInput.value);
-        if (userAnswer === answer) {
-          overlay.remove();
-          updateSkipCount();
-          showPageContent();
-          setTimeout(() => startScrollTracking(), 1000);
-        } else {
-          wrongMessage.style.display = 'block';
-          answerInput.value = '';
-          answerInput.focus();
-          setTimeout(() => wrongMessage.style.display = 'none', 2000);
-        }
-      };
-      
-      submitButton.addEventListener('click', checkAnswer);
-      answerInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') checkAnswer();
-      });
-      
-      setTimeout(() => answerInput.focus(), 100);
+      // Fallback to timer if no level matches
+      executeFriction('timer', overlay, continueButton, siteSkipCount);
     }
   });
 };
+// Function to execute friction levels
+const executeFriction = (type, overlay, continueButton, siteSkipCount) => {
+  switch(type) {
+    case 'timer':
+      showTimerFriction(overlay, continueButton);
+      break;
+    case 'fakeLoading':
+      showFakeLoadingFriction(overlay, continueButton);
+      break;
+    case 'fakeButtons':
+      showFakeButtonsFriction(overlay, continueButton);
+      break;
+    case 'hotCold':
+      showHotColdFriction(overlay, continueButton);
+      break;
+    case 'movingButton':
+      showMovingButtonFriction(overlay, continueButton);
+      break;
+    default:
+      showTimerFriction(overlay, continueButton);
+  }
+};
+
+// Timer friction level
+const showTimerFriction = (overlay, continueButton) => {
+  // Just make the button clickable immediately after countdown
+  continueButton.addEventListener('click', () => {
+    overlay.remove();
+    updateSkipCount();
+    showPageContent();
+    setTimeout(() => startScrollTracking(), 1000);
+  });
+};
+
+// Fake loading bar friction - gets to 99% and sits there
+const showFakeLoadingFriction = (overlay, continueButton) => {
+  // Hide the timer since we have a loading bar
+  const timerDiv = overlay.querySelector('.one-sec-timer');
+  if (timerDiv) timerDiv.style.display = 'none';
+  
+  continueButton.style.display = 'none';
+  continueButton.textContent = 'Loading your shame...';
+  
+  const loadingContainer = document.createElement('div');
+  loadingContainer.style.textAlign = 'center';
+  loadingContainer.style.marginTop = '20px';
+  
+  const loadingText = document.createElement('p');
+  loadingText.textContent = 'Preparing your personalized guilt trip...';
+  loadingText.style.marginBottom = '10px';
+  
+  const fakeLoadingBar = document.createElement('div');
+  fakeLoadingBar.style = 'width: 100%; height: 20px; background: #ddd; border-radius: 10px; margin-bottom: 20px; overflow: hidden; position: relative;';
+  
+  const progressBar = document.createElement('div');
+  progressBar.style = 'width: 0; height: 100%; background: linear-gradient(90deg, #76c7c0, #4a90e2); transition: width 0.2s; position: relative;';
+  
+  // Add some animated stripes to make it look more realistic
+  const stripes = document.createElement('div');
+  stripes.style = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.1) 10px, transparent 10px, transparent 20px); animation: moveStripes 1s linear infinite;';
+  progressBar.appendChild(stripes);
+  
+  fakeLoadingBar.appendChild(progressBar);
+  loadingContainer.appendChild(loadingText);
+  loadingContainer.appendChild(fakeLoadingBar);
+  
+  const contentDiv = overlay.querySelector('.one-sec-content');
+  contentDiv.appendChild(loadingContainer);
+  
+  // Add CSS animation for stripes
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes moveStripes {
+      0% { background-position: 0 0; }
+      100% { background-position: 40px 0; }
+    }
+  `;
+  document.head.appendChild(style);
+
+  let progress = 0;
+  let stuckAt99 = false;
+  const interval = setInterval(() => {
+    if (!stuckAt99) {
+      // More erratic progress that slows down as it approaches 99%
+      if (progress < 80) {
+        progress += Math.random() * 12 + 3; // Fast progress initially
+      } else if (progress < 95) {
+        progress += Math.random() * 4 + 1; // Slower progress
+      } else if (progress < 99) {
+        progress += Math.random() * 0.5 + 0.1; // Very slow progress
+      } else {
+        progress = 99;
+        stuckAt99 = true;
+        loadingText.textContent = 'Loading... 99% (Almost there...)';
+        
+        // Show button after being stuck at 99% for 3 seconds
+        setTimeout(() => {
+          clearInterval(interval);
+          progressBar.style.width = '100%';
+          loadingText.textContent = 'Loading complete! (Finally...)';
+          setTimeout(() => {
+            continueButton.style.display = 'block';
+            continueButton.textContent = 'Continue (if you must)';
+            continueButton.addEventListener('click', () => {
+              overlay.remove();
+              updateSkipCount();
+              showPageContent();
+              setTimeout(() => startScrollTracking(), 1000);
+            });
+          }, 500);
+        }, 3000);
+      }
+      
+      if (!stuckAt99) {
+        progressBar.style.width = `${Math.min(progress, 99)}%`;
+        loadingText.textContent = `Loading... ${Math.floor(Math.min(progress, 99))}%`;
+      }
+    }
+  }, 200);
+};
+// Fake buttons friction level
+const showFakeButtonsFriction = (overlay, continueButton) => {
+  // Hide continue button and timer
+  continueButton.style.display = 'none';
+  const timerDiv = overlay.querySelector('.one-sec-timer');
+  if (timerDiv) timerDiv.style.display = 'none';
+
+  // Instruction text
+  const instructionText = document.createElement('p');
+  instructionText.textContent = 'Find the real button to continue:';
+  instructionText.style.cssText = `
+    color: #666;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0;
+    text-align: center;
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 25px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    cursor: default;
+    max-width: 300px;
+    word-wrap: break-word;
+    white-space: normal;
+    line-height: 1.3;
+  `;
+  
+  const contentDiv = overlay.querySelector('.one-sec-content');
+  contentDiv.appendChild(instructionText);
+
+  // Create buttons scattered across the page
+  const realButtonIndex = Math.floor(Math.random() * 8);
+  for (let i = 0; i < 8; i++) {
+    const button = document.createElement('button');
+    button.textContent = 'Continue to site';
+    button.style = `
+      position: absolute;
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      max-width: 200px;
+    `;
+
+    // Scatter buttons anywhere on the page
+    const x = Math.random() * window.innerWidth;
+    const y = Math.random() * window.innerHeight;
+    button.style.left = `${x}px`;
+    button.style.top = `${y}px`;
+
+    button.addEventListener('click', i === realButtonIndex ? () => {
+      overlay.remove();
+      updateSkipCount();
+      showPageContent();
+      setTimeout(() => startScrollTracking(), 1000);
+    } : () => {
+      button.textContent = 'Nope! Try another';
+      button.style.background = '#ff4444';
+      setTimeout(() => {
+        button.textContent = 'Continue to site';
+        button.style.background = '#667eea';
+      }, 500);
+    });
+
+    overlay.appendChild(button);
+  }
+};
+// Hot/cold invisible button
+const showHotColdFriction = (overlay, continueButton) => {
+// Hide the timer and main button since they aren't needed
+  const timerDiv = overlay.querySelector('.one-sec-timer');
+  if (timerDiv) timerDiv.style.display = 'none';
+  if (continueButton) continueButton.style.display = 'none';
+
+  const contentDiv = overlay.querySelector('.one-sec-content');
+
+  // Create an always hidden, smaller clickable area
+  const invisibleButton = document.createElement('button');
+  invisibleButton.style.cssText = `
+    position: absolute;
+    left: ${Math.random() * 80}%;
+    top: ${Math.random() * 50 + 30}%;
+    width: 30px;
+    height: 15px;
+    opacity: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  `;
+  contentDiv.appendChild(invisibleButton);
+
+  // Hint display with temperature feedback
+  const hintButton = document.createElement('button');
+  hintButton.textContent = 'Find the hidden button by moving your mouse';
+  hintButton.style.cssText = `
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: default;
+    max-width: 300px;
+    margin-top: 20px;
+  `;
+  contentDiv.appendChild(hintButton);
+
+  // Define temperature levels
+  const temperatureColors = {
+    'Frozen solid! 🧊': '#0066cc',
+    'Very cold ❄️': '#0080ff',
+    'Cold 🔷': '#4da6ff',
+    'Cool 🔹': '#80bfff',
+    'Getting warmer 🔸': '#ffb366',
+    'Warm 🔶': '#ff9933',
+    'Hot 🔥': '#ff6600',
+    'Very hot 🌋': '#ff3300',
+    'Burning! 🔥🔥': '#ff0000'
+  };
+
+  contentDiv.addEventListener('mousemove', (e) => {
+    // Refresh indicator if mouse re-enters
+    updateTemperatureIndicator(e);
+  });
+
+  contentDiv.addEventListener('mouseenter', updateTemperatureIndicator);
+
+  contentDiv.addEventListener('mouseleave', () => {
+    hintButton.textContent = 'Find the hidden button by moving your mouse';
+    hintButton.style.background = '#667eea';
+  });
+
+  function updateTemperatureIndicator(e) {
+    const rect = invisibleButton.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const dist = Math.sqrt(Math.pow(e.clientX - centerX, 2) + Math.pow(e.clientY - centerY, 2));
+
+    // Temperature calculation
+    let temperature;
+    if (dist <= 30) {
+      temperature = 'Burning! 🔥🔥';
+    } else if (dist <= 60) {
+      temperature = 'Very hot 🌋';
+    } else if (dist <= 100) {
+      temperature = 'Hot 🔥';
+    } else if (dist <= 150) {
+      temperature = 'Warm 🔶';
+    } else if (dist <= 200) {
+      temperature = 'Getting warmer 🔸';
+    } else if (dist <= 250) {
+      temperature = 'Cool 🔹';
+    } else if (dist <= 300) {
+      temperature = 'Cold 🔷';
+    } else if (dist <= 400) {
+      temperature = 'Very cold ❄️';
+    } else {
+      temperature = 'Frozen solid! 🧊';
+    }
+
+    hintButton.textContent = temperature;
+    hintButton.style.background = temperatureColors[temperature];
+  };
+
+  invisibleButton.addEventListener('click', () => {
+    overlay.remove();
+    updateSkipCount();
+    showPageContent();
+    setTimeout(() => startScrollTracking(), 1000);
+  });
+};
+
+
+// Moving button friction - even crazier movement
+const showMovingButtonFriction = (overlay, continueButton) => {
+  // Hide timer and setup moving button
+  const timerDiv = overlay.querySelector('.one-sec-timer');
+  if (timerDiv) timerDiv.style.display = 'none';
+
+  continueButton.style.position = 'relative';
+  continueButton.style.transition = 'all 0.1s ease';
+  continueButton.textContent = 'Try to catch me! 😈';
+
+  let moveCount = 0;
+  const maxMoves = 25; // Further increased moves requirement
+  const boundsX = window.innerWidth; // More area to move
+  const boundsY = window.innerHeight;
+
+  const moveButton = () => {
+    moveCount++;
+    const randomX = (Math.random() - 0.5) * boundsX * 2;
+    const randomY = (Math.random() - 0.5) * boundsY * 2;
+    const randomRotation = (Math.random() - 0.5) * 60; // More rotation
+
+    continueButton.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
+    
+    const messages = [
+      `Nope! Try again! (${maxMoves - moveCount} left)`,
+      `Missed me! (${maxMoves - moveCount} left)`,
+      `Too slow! (${maxMoves - moveCount} left)`,
+      `Can't catch me! (${maxMoves - moveCount} left)`,
+      `Keep trying! (${maxMoves - moveCount} left)`,
+      `Almost there! (${maxMoves - moveCount} left)`,
+      `So close! (${maxMoves - moveCount} left)`,
+      `One more time! (${maxMoves - moveCount} left)`,
+      `Still trying? (${maxMoves - moveCount} left)`,
+      `Getting tired? (${maxMoves - moveCount} left)`,
+      `I'm faster! (${maxMoves - moveCount} left)`,
+      `You're persistent! (${maxMoves - moveCount} left)`,
+      `Almost got me! (${maxMoves - moveCount} left)`,
+      `Final attempts! (${maxMoves - moveCount} left)`,
+      `Last chance! (${maxMoves - moveCount} left)`,
+      `Keep catching! (${maxMoves - moveCount} left)`,
+      `You're getting better! (${maxMoves - moveCount} left)`
+    ];
+
+    continueButton.textContent = messages[Math.min(moveCount - 1, messages.length - 1)];
+    
+    if (moveCount >= maxMoves) {
+      continueButton.textContent = 'Fine, you caught me! 😤';
+      continueButton.style.transform = 'translate(0, 0) rotate(0deg)';
+      continueButton.style.background = '#28a745'; // Green when caught
+      continueButton.removeEventListener('mouseenter', moveButton);
+    }
+  };
+
+  // Initiate move on hover, mouseover, and mousedown events
+  continueButton.addEventListener('mouseenter', moveButton);
+  continueButton.addEventListener('mouseover', moveButton);
+  continueButton.addEventListener('mousedown', moveButton);
+  
+  continueButton.addEventListener('click', (e) => {
+    if (moveCount >= maxMoves) {
+      overlay.remove();
+      updateSkipCount();
+      showPageContent();
+      setTimeout(() => startScrollTracking(), 1000);
+    } else {
+      e.preventDefault();
+    }
+  });
+};
+
 
 // Function to update skip count for current site
 const updateSkipCount = () => {
   const siteName = getSiteName();
   const siteKey = `skipCount_${siteName.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
-  
-  chrome.storage.sync.get([siteKey, 'totalSkipCount'], function(result) {
+
+  chrome.storage.sync.get([siteKey, 'totalSkipCount'], function (result) {
     let siteSkipCount = result[siteKey] || 0;
     let totalSkipCount = result.totalSkipCount || 0;
-    
+
     siteSkipCount++;
     totalSkipCount++;
-    
+
     const updateData = {};
     updateData[siteKey] = siteSkipCount;
     updateData['totalSkipCount'] = totalSkipCount;
-    
+
     chrome.storage.sync.set(updateData);
   });
 };
@@ -356,6 +646,8 @@ const stopScrollTracking = () => {
   window.removeEventListener('scroll', handleScroll);
 };
 
-// Initialize the extension
-initializeExtension();
+// Ensure initialization logic runs at correct timing
+document.addEventListener('DOMContentLoaded', () => {
+    initializeExtension();
+});
 

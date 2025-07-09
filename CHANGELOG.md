@@ -6,7 +6,15 @@ All notable changes to One-Sec Reminder will be documented in this file.
 
 ### Added - The Great Shame Update 🔥
 
-#### Fun Friction System - Making Skipping Annoying 🎮😈
+#### Modular Friction System - Choose Your Annoyance Level 🎭🎮
+- **NEW**: Modular system with 6 friction levels, easily reorderable
+- **Level 1: Timer** - 5-second wait before proceeding
+- **Level 2: Fake Loading Bar** - Pretend loading with progress bar
+- **Level 3: Fake Buttons** - Find the real button among fakes
+- **Level 4: Hot/Cold Invisible Button** - Find invisible button with hints
+- **Level 5: Captcha Hell** - Simple checkbox captcha simulation
+- **Level 6: Moving Button** - Runs away, 8 moves before you can catch it
+- **IMPROVED**: Dynamic configuration allows easy rearrangement of friction levels
 - **NEW**: Progressive friction system that gets more annoying with each skip
 - **Skip 1-2**: Normal button behavior (being nice... for now)
 - **Skip 3-5**: **Moving Button** - runs away from cursor when you hover!
