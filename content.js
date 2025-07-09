@@ -311,32 +311,17 @@ const showFakeButtonsFriction = (overlay, continueButton) => {
   const timerDiv = overlay.querySelector('.one-sec-timer');
   if (timerDiv) timerDiv.style.display = 'none';
 
-  // Instruction text
+  // Instruction text - replace the main button area
+  const contentDiv = overlay.querySelector('.one-sec-content');
   const instructionText = document.createElement('p');
   instructionText.textContent = 'Find the real button to continue:';
   instructionText.style.cssText = `
     color: #666;
     font-size: 16px;
     font-weight: bold;
-    margin: 0;
+    margin: 20px 0;
     text-align: center;
-    background: #667eea;
-    color: white;
-    border: none;
-    padding: 15px 30px;
-    border-radius: 25px;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    cursor: default;
-    max-width: 300px;
-    word-wrap: break-word;
-    white-space: normal;
-    line-height: 1.3;
   `;
-  
-  const contentDiv = overlay.querySelector('.one-sec-content');
   contentDiv.appendChild(instructionText);
 
   // Create buttons scattered across the page
@@ -357,9 +342,10 @@ const showFakeButtonsFriction = (overlay, continueButton) => {
       max-width: 200px;
     `;
 
-    // Scatter buttons anywhere on the page
-    const x = Math.random() * window.innerWidth;
-    const y = Math.random() * window.innerHeight;
+    // Scatter buttons anywhere on the page but keep them on-screen
+    const margin = 100; // Keep buttons away from edges
+    const x = Math.random() * (window.innerWidth - 2 * margin - 200) + margin;
+    const y = Math.random() * (window.innerHeight - 2 * margin - 50) + margin;
     button.style.left = `${x}px`;
     button.style.top = `${y}px`;
 
