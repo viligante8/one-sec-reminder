@@ -6,6 +6,35 @@ All notable changes to One-Sec Reminder will be documented in this file.
 
 ### Added - The Great Shame Update 🔥
 
+#### Site-Specific Skip Tracking System 🎯
+- **NEW**: Skip counts are now tracked individually per site (Reddit, Twitter/X, YouTube, etc.)
+- **NEW**: Site-specific storage keys (e.g., `skipCount_reddit`, `skipCount_youtube`) for granular tracking
+- **NEW**: Total skip count (`totalSkipCount`) maintained across all sites
+- **NEW**: Site-specific shame messages that reference individual site skip counts
+- **NEW**: Enhanced statistics display showing per-site breakdown in popup
+- **NEW**: Smart reset functionality that clears all site-specific counters
+- **IMPROVED**: More personalized guilt messages ("You've ignored me 3 times on Reddit")
+
+#### Scroll-Based Re-Prompting System 📜
+- **NEW**: Scroll tracking that triggers shame overlay after one viewport height of scrolling
+- **NEW**: Special "CAUGHT YOU DOOM-SCROLLING!" messages for scroll triggers
+- **NEW**: Escalating scroll-shame messages based on existing skip count:
+  - **Low skip count**: "I saw you scrolling... and scrolling... This is exactly what I was trying to prevent! 🤦‍♂️"
+  - **Medium skip count**: "Really? You bypassed my warning AND now you're doom-scrolling? I'm losing faith in humanity. 😮‍💨"
+  - **High skip count**: "OH COME ON! Not only did you ignore me, but now you're mindlessly scrolling?! 🤬"
+- **NEW**: Scroll-specific button text ("Continue your mindless scrolling", "Continue doom-scrolling like a zombie")
+- **NEW**: Passive scroll listener with automatic cleanup and 1-second delay
+- **NEW**: Red color scheme for scroll-triggered overlays
+- **NEW**: Scroll detection counter ("One full page of mindless scrolling detected. 📱💀")
+
+#### Enhanced Statistics and UI 📊
+- **NEW**: Popup shows total skip count plus per-site breakdown
+- **NEW**: Site breakdown display ("Reddit: 5 • YouTube: 3") in popup
+- **NEW**: Motivational message when no skips recorded ("No skips yet... staying strong! 💪")
+- **NEW**: Visual escalation based on total skip count across all sites
+- **IMPROVED**: Reset button now clears all site-specific data
+- **IMPROVED**: Button centering fixed for longer shame text messages
+
 #### Skip Count Tracking System
 - **NEW**: Extension now tracks every time user clicks "Continue" to bypass the delay
 - **NEW**: Skip count is stored persistently in Chrome sync storage

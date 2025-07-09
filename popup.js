@@ -24,29 +24,50 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   // Initialize skip count display
-  const skipCountElement = document.getElementById('skip-count');
+  const totalCountElement = document.getElementById('total-count');
+  const siteBreakdownElement = document.getElementById('site-breakdown');
+  
   const updateSkipCountDisplay = () => {
-    chrome.storage.sync.get(['skipCount'], function(result) {
-      const count = result.skipCount || 0;
-      let text = `${count} guilty escape${count !== 1 ? 's' : ''}`;
+    // Get all skip count data
+    chrome.storage.sync.get(null, function(result) {
+      const totalCount = result.totalSkipCount || 0;
       
-      // Add escalating shame text
-      if (count > 15) text += ' (pathetic!)';
-      else if (count > 10) text += ' (seriously?!)';
-      else if (count > 5) text += ' (yikes!)';
+      // Display total count
+      let totalText = `Total: ${totalCount} guilty escape${totalCount !== 1 ? 's' : ''}`;
+      if (totalCount > 15) totalText += ' (pathetic!)';
+      else if (totalCount > 10) totalText += ' (seriously?!)';
+      else if (totalCount > 5) totalText += ' (yikes!)';
       
-      skipCountElement.textContent = text;
+      totalCountElement.textContent = totalText;
       
-      // Change visual styling based on count
-      const counterDiv = skipCountElement.parentElement;
-      if (count > 10) {
+      // Build site breakdown
+      const siteStats = [];
+      const siteNames = ['reddit', 'twitterx', 'youtube', 'instagram', 'facebook', 'tiktok'];
+      const siteDisplayNames = ['Reddit', 'Twitter/X', 'YouTube', 'Instagram', 'Facebook', 'TikTok'];
+      
+      siteNames.forEach((siteName, index) => {
+        const count = result[`skipCount_${siteName}`] || 0;
+        if (count > 0) {
+          siteStats.push(`${siteDisplayNames[index]}: ${count}`);
+        }
+      });
+      
+      if (siteStats.length > 0) {
+        siteBreakdownElement.textContent = siteStats.join(' • ');
+      } else {
+        siteBreakdownElement.textContent = 'No skips yet... staying strong! 💪';
+      }
+      
+      // Change visual styling based on total count
+      const counterDiv = totalCountElement.parentElement;
+      if (totalCount > 10) {
         counterDiv.style.borderLeft = '3px solid #ff0000';
         counterDiv.style.backgroundColor = '#ffe6e6';
-        skipCountElement.style.color = '#ff0000';
-      } else if (count > 5) {
+        totalCountElement.style.color = '#ff0000';
+      } else if (totalCount > 5) {
         counterDiv.style.borderLeft = '3px solid #ff6b6b';
         counterDiv.style.backgroundColor = '#fff0f0';
-        skipCountElement.style.color = '#ff6b6b';
+        totalCountElement.style.color = '#ff6b6b';
       }
     });
   };
@@ -85,14 +106,31 @@ document.addEventListener('DOMContentLoaded', function() {
   };
 
   resetButton.addEventListener('click', function() {
-    chrome.storage.sync.set({ skipCount: 0 });
+    // Clear all site-specific skip counts
+    const keysToReset = {
+      totalSkipCount: 0,
+      skipCount_reddit: 0,
+      skipCount_twitterx: 0,
+      skipCount_youtube: 0,
+      skipCount_instagram: 0,
+      skipCount_facebook: 0,
+      skipCount_tiktok: 0
+    };
+    
+    chrome.storage.sync.set(keysToReset);
     updateSkipCountDisplay();
     headerShame.textContent = "Starting fresh! 🚀";
+    
+    // Reset header and footer shame
+    setTimeout(() => {
+      updateHeaderShame(0);
+      updateFooterShame(0);
+    }, 2000);
   });
 
-  // Update header and footer with new shame every time popup is opened based on skip count
-  chrome.storage.sync.get(['skipCount'], function(result) {
-    const count = result.skipCount || 0;
+  // Update header and footer with new shame every time popup is opened based on total skip count
+  chrome.storage.sync.get(['totalSkipCount'], function(result) {
+    const count = result.totalSkipCount || 0;
     updateHeaderShame(count);
     updateFooterShame(count);
   });
