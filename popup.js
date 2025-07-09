@@ -42,9 +42,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Get all skip count data
     browserAPI.storage.sync.get(null, function(result) {
       const totalCount = result.totalSkipCount || 0;
+      const lastResetDate = result.lastResetDate || 'Never';
       
-      // Display total count
-      let totalText = `Total: ${totalCount} guilty escape${totalCount !== 1 ? 's' : ''}`;
+      // Display total count with daily reset info
+      let totalText = `Today: ${totalCount} guilty escape${totalCount !== 1 ? 's' : ''}`;
       if (totalCount > 15) totalText += ' (pathetic!)';
       else if (totalCount > 10) totalText += ' (seriously?!)';
       else if (totalCount > 5) totalText += ' (yikes!)';
@@ -67,6 +68,12 @@ document.addEventListener('DOMContentLoaded', function() {
         siteBreakdownElement.textContent = siteStats.join(' • ');
       } else {
         siteBreakdownElement.textContent = 'No skips yet... staying strong! 💪';
+      }
+      
+      // Add daily reset info
+      const today = new Date().toDateString();
+      if (lastResetDate === today) {
+        siteBreakdownElement.textContent += ' • Resets daily at midnight';
       }
       
       // Change visual styling based on total count

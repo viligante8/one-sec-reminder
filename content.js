@@ -619,6 +619,36 @@ const showMovingButtonFriction = (overlay, continueButton) => {
 };
 
 
+// Function to check if skip counts need daily reset
+const checkAndResetDaily = (callback) => {
+  const today = new Date().toDateString(); // Get today's date as string (e.g., "Tue Jul 09 2025")
+  
+  browserAPI.storage.sync.get(['lastResetDate'], function(result) {
+    const lastResetDate = result.lastResetDate;
+    
+    if (lastResetDate !== today) {
+      // Reset all skip counts for new day
+      const resetData = {
+        lastResetDate: today,
+        totalSkipCount: 0,
+        skipCount_reddit: 0,
+        skipCount_twitterx: 0,
+        skipCount_youtube: 0,
+        skipCount_instagram: 0,
+        skipCount_facebook: 0,
+        skipCount_tiktok: 0
+      };
+      
+      browserAPI.storage.sync.set(resetData, function() {
+        console.log('One-Sec Reminder: Daily reset completed for', today);
+        callback();
+      });
+    } else {
+      callback();
+    }
+  });
+};
+
 // Function to update skip count for current site
 const updateSkipCount = () => {
   const siteName = getSiteName();
@@ -641,11 +671,14 @@ const updateSkipCount = () => {
 
 // Function to get skip count for current site
 const getCurrentSiteSkipCount = (callback) => {
-  const siteName = getSiteName();
-  const siteKey = `skipCount_${siteName.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
-  
-  browserAPI.storage.sync.get([siteKey], function(result) {
-    callback(result[siteKey] || 0);
+  // Check for daily reset first
+  checkAndResetDaily(() => {
+    const siteName = getSiteName();
+    const siteKey = `skipCount_${siteName.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+    
+    browserAPI.storage.sync.get([siteKey], function(result) {
+      callback(result[siteKey] || 0);
+    });
   });
 };
 
