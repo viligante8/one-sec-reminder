@@ -4,6 +4,35 @@ All notable changes to One-Sec Reminder will be documented in this file.
 
 ## [Unreleased] - 2025-07-09
 
+### Added - Cross-Browser Compatibility & Bug Fixes 🌐
+
+#### Cross-Browser Compatibility
+- **NEW**: Firefox support added alongside Chrome compatibility
+- **NEW**: Universal browser API detection layer that works with both `chrome.*` and `browser.*` APIs
+- **NEW**: Single manifest.json file that works for both Chrome (V3) and Firefox (V2)
+- **NEW**: Manifest includes both `browser_action` and `action` fields for universal compatibility
+- **NEW**: Firefox-specific settings with `browser_specific_settings` configuration
+- **IMPROVED**: Installation process simplified - no file renaming required
+- **IMPROVED**: Documentation updated with installation instructions for both browsers
+
+#### Bug Fixes & Improvements
+- **FIXED**: Hot/cold mouse tracking now works across entire purple background overlay (not just white card)
+- **FIXED**: Moving button properly contained within screen boundaries
+- **FIXED**: Moving button speed reduced and movement range optimized for better user experience
+- **FIXED**: Button height issues in Firefox - all buttons now have consistent height and proper text centering
+- **FIXED**: Moving button mouseover behavior in Chrome - now properly triggers on hover events
+- **IMPROVED**: Button styling uses flexbox for proper vertical centering across browsers
+- **IMPROVED**: Moving button attempts reduced from 25 to 15 for better user experience
+- **IMPROVED**: Button transitions slowed from 0.1s to 0.2s for smoother movement
+- **IMPROVED**: All inline button styles now include min-height and proper centering
+
+#### Technical Improvements
+- **ENHANCED**: Cross-browser API compatibility layer automatically detects browser environment
+- **ENHANCED**: Button styling consistency across all friction levels
+- **ENHANCED**: Event handling for moving button improved with multiple event types
+- **ENHANCED**: Proper boundary calculations for moving elements
+- **ENHANCED**: Enhanced mouseover detection for better cross-browser compatibility
+
 ### Added - The Great Shame Update 🔥
 
 #### Modular Friction System - Choose Your Annoyance Level 🎭🎮

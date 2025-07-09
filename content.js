@@ -1,5 +1,16 @@
 // content.js - One-Sec Reminder
 
+// Cross-browser compatibility for API access
+const browserAPI = (() => {
+  if (typeof browser !== 'undefined') {
+    return browser; // Firefox
+  } else if (typeof chrome !== 'undefined') {
+    return chrome; // Chrome
+  } else {
+    throw new Error('Browser API not available');
+  }
+})();
+
 // Get the current site name
 const getSiteName = () => {
   const hostname = window.location.hostname;
@@ -340,6 +351,13 @@ const showFakeButtonsFriction = (overlay, continueButton) => {
       font-weight: 600;
       cursor: pointer;
       max-width: 200px;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      box-sizing: border-box;
+      line-height: 1.4;
     `;
 
     // Scatter buttons anywhere on the page but keep them on-screen
@@ -405,6 +423,13 @@ const showHotColdFriction = (overlay, continueButton) => {
     cursor: default;
     max-width: 300px;
     margin-top: 20px;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-sizing: border-box;
+    line-height: 1.4;
   `;
   contentDiv.appendChild(hintButton);
 
@@ -480,8 +505,12 @@ const showMovingButtonFriction = (overlay, continueButton) => {
   const timerDiv = overlay.querySelector('.one-sec-timer');
   if (timerDiv) timerDiv.style.display = 'none';
 
+  // Reset button styling to ensure proper hover detection
   continueButton.style.position = 'relative';
   continueButton.style.transition = 'all 0.2s ease';
+  continueButton.style.display = 'block'; // Override flex for better hover detection
+  continueButton.style.textAlign = 'center';
+  continueButton.style.lineHeight = '1.4';
   continueButton.textContent = 'Try to catch me! 😈';
 
   let moveCount = 0;
@@ -496,7 +525,13 @@ const showMovingButtonFriction = (overlay, continueButton) => {
   const maxX = (window.innerWidth - buttonWidth - margin) / 2;
   const maxY = (window.innerHeight - buttonHeight - margin) / 2;
 
-  const moveButton = () => {
+  const moveButton = (e) => {
+    // Prevent click from firing when moving
+    if (e && e.type === 'click' && moveCount < maxMoves) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
     moveCount++;
     
     // More controlled movement - stay within safe bounds
@@ -530,25 +565,27 @@ const showMovingButtonFriction = (overlay, continueButton) => {
       continueButton.textContent = 'Fine, you caught me! 😤';
       continueButton.style.transform = 'translate(0, 0) rotate(0deg)';
       continueButton.style.background = '#28a745'; // Green when caught
+      // Remove all movement event listeners
       continueButton.removeEventListener('mouseenter', moveButton);
       continueButton.removeEventListener('mouseover', moveButton);
       continueButton.removeEventListener('mousedown', moveButton);
+      continueButton.removeEventListener('click', moveButton);
     }
   };
 
-  // Initiate move on hover, mouseover, and mousedown events
+  // Use multiple event types to ensure cross-browser compatibility
   continueButton.addEventListener('mouseenter', moveButton);
   continueButton.addEventListener('mouseover', moveButton);
   continueButton.addEventListener('mousedown', moveButton);
+  continueButton.addEventListener('click', moveButton);
   
+  // Separate click handler for when button is caught
   continueButton.addEventListener('click', (e) => {
     if (moveCount >= maxMoves) {
       overlay.remove();
       updateSkipCount();
       showPageContent();
       setTimeout(() => startScrollTracking(), 1000);
-    } else {
-      e.preventDefault();
     }
   });
 };
@@ -559,7 +596,7 @@ const updateSkipCount = () => {
   const siteName = getSiteName();
   const siteKey = `skipCount_${siteName.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
 
-  chrome.storage.sync.get([siteKey, 'totalSkipCount'], function (result) {
+  browserAPI.storage.sync.get([siteKey, 'totalSkipCount'], function (result) {
     let siteSkipCount = result[siteKey] || 0;
     let totalSkipCount = result.totalSkipCount || 0;
 
@@ -570,7 +607,7 @@ const updateSkipCount = () => {
     updateData[siteKey] = siteSkipCount;
     updateData['totalSkipCount'] = totalSkipCount;
 
-    chrome.storage.sync.set(updateData);
+    browserAPI.storage.sync.set(updateData);
   });
 };
 
@@ -579,14 +616,14 @@ const getCurrentSiteSkipCount = (callback) => {
   const siteName = getSiteName();
   const siteKey = `skipCount_${siteName.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
   
-  chrome.storage.sync.get([siteKey], function(result) {
+  browserAPI.storage.sync.get([siteKey], function(result) {
     callback(result[siteKey] || 0);
   });
 };
 
 // Initialize with settings check
 const initializeExtension = () => {
-  chrome.storage.sync.get(['enabled', 'delay'], function(result) {
+  browserAPI.storage.sync.get(['enabled', 'delay'], function(result) {
     const enabled = result.enabled !== false; // Default to true
     const delay = parseInt(result.delay) || 3; // Default to 3 seconds
     
@@ -617,11 +654,11 @@ const handleScroll = () => {
     scrollTriggered = true;
     
     // Check if extension is still enabled
-    chrome.storage.sync.get(['enabled'], function(result) {
+    browserAPI.storage.sync.get(['enabled'], function(result) {
       const enabled = result.enabled !== false;
       if (enabled) {
         // Get current delay setting and run the overlay again
-        chrome.storage.sync.get(['delay'], function(result) {
+        browserAPI.storage.sync.get(['delay'], function(result) {
           const delay = parseInt(result.delay) || 3;
           runOneSecDelay(delay, true); // Pass true to indicate this is a scroll trigger
         });

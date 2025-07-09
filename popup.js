@@ -1,24 +1,35 @@
 // popup.js - One-Sec Reminder Settings
 
+// Cross-browser compatibility for API access
+const browserAPI = (() => {
+  if (typeof browser !== 'undefined') {
+    return browser; // Firefox
+  } else if (typeof chrome !== 'undefined') {
+    return chrome; // Chrome
+  } else {
+    throw new Error('Browser API not available');
+  }
+})();
+
 document.addEventListener('DOMContentLoaded', function() {
   const enabledCheckbox = document.getElementById('enabled');
   const delaySelect = document.getElementById('delay');
   
   // Load saved settings
-  chrome.storage.sync.get(['enabled', 'delay'], function(result) {
+  browserAPI.storage.sync.get(['enabled', 'delay'], function(result) {
     enabledCheckbox.checked = result.enabled !== false; // Default to true
     delaySelect.value = result.delay || '3'; // Default to 3 seconds
   });
   
   // Save settings when changed
   enabledCheckbox.addEventListener('change', function() {
-    chrome.storage.sync.set({
+    browserAPI.storage.sync.set({
       enabled: enabledCheckbox.checked
     });
   });
   
   delaySelect.addEventListener('change', function() {
-    chrome.storage.sync.set({
+    browserAPI.storage.sync.set({
       delay: delaySelect.value
     });
   });
@@ -29,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
   const updateSkipCountDisplay = () => {
     // Get all skip count data
-    chrome.storage.sync.get(null, function(result) {
+    browserAPI.storage.sync.get(null, function(result) {
       const totalCount = result.totalSkipCount || 0;
       
       // Display total count
@@ -117,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
       skipCount_tiktok: 0
     };
     
-    chrome.storage.sync.set(keysToReset);
+    browserAPI.storage.sync.set(keysToReset);
     updateSkipCountDisplay();
     headerShame.textContent = "Starting fresh! 🚀";
     
@@ -129,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   // Update header and footer with new shame every time popup is opened based on total skip count
-  chrome.storage.sync.get(['totalSkipCount'], function(result) {
+  browserAPI.storage.sync.get(['totalSkipCount'], function(result) {
     const count = result.totalSkipCount || 0;
     updateHeaderShame(count);
     updateFooterShame(count);
