@@ -375,20 +375,21 @@ const showHotColdFriction = (overlay, continueButton) => {
 
   const contentDiv = overlay.querySelector('.one-sec-content');
 
-  // Create an always hidden, smaller clickable area
+  // Create an always hidden, smaller clickable area positioned relative to the entire overlay
   const invisibleButton = document.createElement('button');
   invisibleButton.style.cssText = `
-    position: absolute;
-    left: ${Math.random() * 80}%;
-    top: ${Math.random() * 50 + 30}%;
+    position: fixed;
+    left: ${Math.random() * 60 + 20}%;
+    top: ${Math.random() * 60 + 20}%;
     width: 30px;
     height: 15px;
     opacity: 0;
     background: transparent;
     border: none;
     cursor: pointer;
+    z-index: 1000000;
   `;
-  contentDiv.appendChild(invisibleButton);
+  overlay.appendChild(invisibleButton); // Append to overlay, not contentDiv
 
   // Hint display with temperature feedback
   const hintButton = document.createElement('button');
@@ -420,14 +421,14 @@ const showHotColdFriction = (overlay, continueButton) => {
     'Burning! 🔥🔥': '#ff0000'
   };
 
-  contentDiv.addEventListener('mousemove', (e) => {
-    // Refresh indicator if mouse re-enters
+  // Attach mousemove to the entire overlay instead of just contentDiv
+  overlay.addEventListener('mousemove', (e) => {
     updateTemperatureIndicator(e);
   });
 
-  contentDiv.addEventListener('mouseenter', updateTemperatureIndicator);
+  overlay.addEventListener('mouseenter', updateTemperatureIndicator);
 
-  contentDiv.addEventListener('mouseleave', () => {
+  overlay.addEventListener('mouseleave', () => {
     hintButton.textContent = 'Find the hidden button by moving your mouse';
     hintButton.style.background = '#667eea';
   });
@@ -480,19 +481,28 @@ const showMovingButtonFriction = (overlay, continueButton) => {
   if (timerDiv) timerDiv.style.display = 'none';
 
   continueButton.style.position = 'relative';
-  continueButton.style.transition = 'all 0.1s ease';
+  continueButton.style.transition = 'all 0.2s ease';
   continueButton.textContent = 'Try to catch me! 😈';
 
   let moveCount = 0;
-  const maxMoves = 25; // Further increased moves requirement
-  const boundsX = window.innerWidth; // More area to move
-  const boundsY = window.innerHeight;
+  const maxMoves = 15; // Reduced from 25 to make it more reasonable
+  
+  // Get button dimensions for boundary calculations
+  const buttonWidth = 200; // Approximate button width
+  const buttonHeight = 50; // Approximate button height
+  const margin = 50; // Keep button away from edges
+  
+  // Calculate safe movement bounds (keep button on screen)
+  const maxX = (window.innerWidth - buttonWidth - margin) / 2;
+  const maxY = (window.innerHeight - buttonHeight - margin) / 2;
 
   const moveButton = () => {
     moveCount++;
-    const randomX = (Math.random() - 0.5) * boundsX * 2;
-    const randomY = (Math.random() - 0.5) * boundsY * 2;
-    const randomRotation = (Math.random() - 0.5) * 60; // More rotation
+    
+    // More controlled movement - stay within safe bounds
+    const randomX = (Math.random() - 0.5) * maxX * 1.5;
+    const randomY = (Math.random() - 0.5) * maxY * 1.5;
+    const randomRotation = (Math.random() - 0.5) * 30; // Less rotation
 
     continueButton.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${randomRotation}deg)`;
     
@@ -511,9 +521,7 @@ const showMovingButtonFriction = (overlay, continueButton) => {
       `You're persistent! (${maxMoves - moveCount} left)`,
       `Almost got me! (${maxMoves - moveCount} left)`,
       `Final attempts! (${maxMoves - moveCount} left)`,
-      `Last chance! (${maxMoves - moveCount} left)`,
-      `Keep catching! (${maxMoves - moveCount} left)`,
-      `You're getting better! (${maxMoves - moveCount} left)`
+      `Last chance! (${maxMoves - moveCount} left)`
     ];
 
     continueButton.textContent = messages[Math.min(moveCount - 1, messages.length - 1)];
@@ -523,6 +531,8 @@ const showMovingButtonFriction = (overlay, continueButton) => {
       continueButton.style.transform = 'translate(0, 0) rotate(0deg)';
       continueButton.style.background = '#28a745'; // Green when caught
       continueButton.removeEventListener('mouseenter', moveButton);
+      continueButton.removeEventListener('mouseover', moveButton);
+      continueButton.removeEventListener('mousedown', moveButton);
     }
   };
 
