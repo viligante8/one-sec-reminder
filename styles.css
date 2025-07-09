@@ -1,0 +1,151 @@
+/* styles.css - One-Sec Reminder */
+
+#one-sec-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  z-index: 999999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.one-sec-content {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 90%;
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.one-sec-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.one-sec-content h2 {
+  color: #333;
+  margin: 0 0 20px 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.one-sec-content p {
+  color: #666;
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.one-sec-content strong {
+  color: #333;
+  font-weight: 600;
+}
+
+.one-sec-timer {
+  margin: 30px 0;
+}
+
+.one-sec-countdown {
+  font-size: 48px;
+  font-weight: bold;
+  color: #667eea;
+  animation: countdownPulse 1s infinite;
+}
+
+@keyframes countdownPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+#one-sec-continue {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#one-sec-continue:hover {
+  background: #5a67d8;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+#one-sec-continue:active {
+  transform: translateY(0);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .one-sec-content {
+    background: #1a1a1a;
+    color: #e0e0e0;
+  }
+  
+  .one-sec-content h2 {
+    color: #e0e0e0;
+  }
+  
+  .one-sec-content p {
+    color: #b0b0b0;
+  }
+  
+  .one-sec-content strong {
+    color: #e0e0e0;
+  }
+}

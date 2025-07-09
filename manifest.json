@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "One-Sec Reminder",
+  "version": "1.0",
+  "description": "A mindful pause before accessing addictive websites",
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.reddit.com/*",
+        "*://*.twitter.com/*",
+        "*://*.x.com/*",
+        "*://*.youtube.com/*",
+        "*://*.instagram.com/*",
+        "*://*.facebook.com/*",
+        "*://*.tiktok.com/*"
+      ],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_start"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "One-Sec Reminder Settings"
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}
