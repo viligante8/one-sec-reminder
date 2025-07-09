@@ -56,6 +56,20 @@
       margin-top: 10px;
     }
     
+    .skip-counter {
+      font-size: 12px;
+      color: #666;
+      margin-top: 10px;
+      padding: 8px;
+      background-color: #f9f9f9;
+      border-radius: 4px;
+      border-left: 3px solid #ff6b6b;
+    }
+    
+    .skip-counter strong {
+      color: #ff6b6b;
+    }
+    
     .footer {
       text-align: center;
       margin-top: 20px;
@@ -114,7 +128,7 @@
 <body>
   <div class="header">
     <h1>⏳ One-Sec Reminder</h1>
-    <p>Mindful browsing for better focus</p>
+    <p id="header-shame">Your friendly neighborhood procrastination buster</p>
   </div>
   
   <div class="setting">
@@ -123,12 +137,12 @@
         <input type="checkbox" id="enabled" checked>
         <span class="slider"></span>
       </label>
-      Enable One-Sec Reminder
+      Enable Digital Intervention
     </label>
   </div>
   
   <div class="setting">
-    <label for="delay">Delay Duration:</label>
+    <label for="delay">How long should I shame you?</label>
     <select id="delay">
       <option value="1">1 second</option>
       <option value="2">2 seconds</option>
@@ -147,8 +161,14 @@
     • TikTok
   </div>
   
+  <div class="skip-counter">
+    <strong>Shame Counter:</strong><br>
+    <span id="skip-count">0 guilty escapes</span>
+    <button id="reset-counter" style="margin-top: 5px; font-size: 10px; padding: 2px 6px;">Reset (Fresh Start)</button>
+  </div>
+  
   <div class="footer">
-    Take a moment to consider your digital habits
+    <span id="footer-shame">Take a moment to consider your digital habits</span>
   </div>
   
   <script src="popup.js"></script>

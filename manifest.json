@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "One-Sec Reminder",
   "version": "1.0",
-  "description": "A mindful pause before accessing addictive websites",
+  "description": "Your digital intervention specialist (with a sense of humor)",
   "permissions": [
     "activeTab",
     "storage"
