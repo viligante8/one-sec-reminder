@@ -168,7 +168,8 @@ const runOneSecDelay = (delaySeconds = 3, isScrollTrigger = false) => {
       } else {
         clearInterval(timer);
         countdownElement.style.display = 'none';
-        continueButton.style.display = 'block';
+        // Don't show button here - let the friction system handle it
+        // continueButton.style.display = 'block';
       }
     }, 1000);
     
@@ -220,13 +221,21 @@ const executeFriction = (type, overlay, continueButton, siteSkipCount) => {
 
 // Timer friction level
 const showTimerFriction = (overlay, continueButton) => {
-  // Just make the button clickable immediately after countdown
-  continueButton.addEventListener('click', () => {
-    overlay.remove();
-    updateSkipCount();
-    showPageContent();
-    setTimeout(() => startScrollTracking(), 1000);
-  });
+  // Wait for the countdown to finish, then show the button
+  const timer = setInterval(() => {
+    const countdownElement = overlay.querySelector('.one-sec-countdown');
+    if (!countdownElement || countdownElement.style.display === 'none') {
+      clearInterval(timer);
+      // Show the button after countdown is complete
+      continueButton.style.display = 'block';
+      continueButton.addEventListener('click', () => {
+        overlay.remove();
+        updateSkipCount();
+        showPageContent();
+        setTimeout(() => startScrollTracking(), 1000);
+      });
+    }
+  }, 100);
 };
 
 // Fake loading bar friction - gets to 99% and sits there
@@ -235,6 +244,7 @@ const showFakeLoadingFriction = (overlay, continueButton) => {
   const timerDiv = overlay.querySelector('.one-sec-timer');
   if (timerDiv) timerDiv.style.display = 'none';
   
+  // Keep button hidden throughout the entire loading process
   continueButton.style.display = 'none';
   continueButton.textContent = 'Loading your shame...';
   
@@ -276,6 +286,8 @@ const showFakeLoadingFriction = (overlay, continueButton) => {
 
   let progress = 0;
   let stuckAt99 = false;
+  let loadingComplete = false;
+  
   const interval = setInterval(() => {
     if (!stuckAt99) {
       // More erratic progress that slows down as it approaches 99%
@@ -290,19 +302,35 @@ const showFakeLoadingFriction = (overlay, continueButton) => {
         stuckAt99 = true;
         loadingText.textContent = 'Loading... 99% (Almost there...)';
         
-        // Show button after being stuck at 99% for 3 seconds
+        // Complete loading after being stuck at 99% for 3 seconds
         setTimeout(() => {
           clearInterval(interval);
+          
+          // Set progress to 100% and change to solid color
           progressBar.style.width = '100%';
-          loadingText.textContent = 'Loading complete! (Finally...)';
+          progressBar.style.background = '#28a745'; // Solid green for completion
+          progressBar.style.transition = 'all 0.5s ease';
+          
+          // Remove animated stripes when complete
+          stripes.style.display = 'none';
+          
+          loadingText.textContent = 'Loading complete! ✓';
+          loadingComplete = true;
+          
+          // Wait for completion animation to finish, then show button
           setTimeout(() => {
-            continueButton.style.display = 'block';
+            // Now show the button with updated text
             continueButton.textContent = 'Continue (if you must)';
+            continueButton.style.display = 'block';
+            
+            // Only add click handler after loading is truly complete
             continueButton.addEventListener('click', () => {
-              overlay.remove();
-              updateSkipCount();
-              showPageContent();
-              setTimeout(() => startScrollTracking(), 1000);
+              if (loadingComplete) {
+                overlay.remove();
+                updateSkipCount();
+                showPageContent();
+                setTimeout(() => startScrollTracking(), 1000);
+              }
             });
           }, 500);
         }, 3000);
