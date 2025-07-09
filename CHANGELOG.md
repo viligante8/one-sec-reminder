@@ -6,6 +6,23 @@ All notable changes to One-Sec Reminder will be documented in this file.
 
 ### Added - The Great Shame Update 🔥
 
+#### Fun Friction System - Making Skipping Annoying 🎮😈
+- **NEW**: Progressive friction system that gets more annoying with each skip
+- **Skip 1-2**: Normal button behavior (being nice... for now)
+- **Skip 3-5**: **Moving Button** - runs away from cursor when you hover!
+  - Button moves to random positions **8 times** before you can catch it (increased from 3)
+  - **Much larger movement range**: 300px horizontal, 200px vertical (tripled!)
+  - **Faster animations**: 0.2s transitions make it snappier and more evasive
+  - **Multiple triggers**: Moves on hover, mouseover, AND click attempts
+  - **Varied taunting messages**: "Nope! Try again!", "Missed me!", "Too slow!", "Can't catch me!"
+  - Text changes to "Try to click me! 😈" and progresses through sarcastic messages
+  - **Much more genuinely frustrating** - takes real effort to catch
+- **Skip 6+**: **Math Puzzle** - solve simple addition to continue
+  - Random math problems (e.g., "7 + 3 = ?")
+  - Wrong answers show "Wrong! Try again, genius. 🤦‍♂️"
+  - Forces actual brain engagement instead of mindless clicking
+- **IMPROVED**: Much more entertaining than boring click counters
+
 #### Site-Specific Skip Tracking System 🎯
 - **NEW**: Skip counts are now tracked individually per site (Reddit, Twitter/X, YouTube, etc.)
 - **NEW**: Site-specific storage keys (e.g., `skipCount_reddit`, `skipCount_youtube`) for granular tracking

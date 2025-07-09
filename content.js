@@ -161,16 +161,110 @@ const runOneSecDelay = (delaySeconds = 3, isScrollTrigger = false) => {
       }
     }, 1000);
     
-    continueButton.addEventListener('click', () => {
-      overlay.remove();
-      updateSkipCount();
-      showPageContent();
+    // Add friction based on skip count
+    if (siteSkipCount < 3) {
+      // Normal button for first few skips
+      continueButton.addEventListener('click', () => {
+        overlay.remove();
+        updateSkipCount();
+        showPageContent();
+        setTimeout(() => startScrollTracking(), 1000);
+      });
+    } else if (siteSkipCount < 6) {
+      // Moving button - runs away from cursor MUCH more aggressively
+      continueButton.style.position = 'relative';
+      continueButton.style.transition = 'all 0.2s ease';
+      continueButton.textContent = 'Try to click me! 😈';
       
-      // Start scroll tracking after they continue
-      setTimeout(() => {
-        startScrollTracking();
-      }, 1000); // Wait 1 second before starting to track scroll
-    });
+      let moveCount = 0;
+      const maxMoves = 8; // Increased from 3 to 8
+      
+      const moveButton = () => {
+        if (moveCount < maxMoves) {
+          // Much larger movement range
+          const randomX = (Math.random() - 0.5) * 300; // Increased from 100 to 300
+          const randomY = (Math.random() - 0.5) * 200; // Increased from 50 to 200
+          continueButton.style.transform = `translate(${randomX}px, ${randomY}px)`;
+          moveCount++;
+          
+          const messages = [
+            `Nope! Try again! (${maxMoves - moveCount} left)`,
+            `Missed me! (${maxMoves - moveCount} left)`,
+            `Too slow! (${maxMoves - moveCount} left)`,
+            `Can't catch me! (${maxMoves - moveCount} left)`,
+            `Keep trying! (${maxMoves - moveCount} left)`,
+            `Almost there! (${maxMoves - moveCount} left)`,
+            `So close! (${maxMoves - moveCount} left)`,
+            `One more time! (${maxMoves - moveCount} left)`
+          ];
+          
+          continueButton.textContent = messages[moveCount - 1] || `Stop running! (${maxMoves - moveCount} more moves)`;
+        } else {
+          continueButton.textContent = 'Fine, you caught me! 😤';
+          continueButton.style.transform = 'translate(0, 0)';
+        }
+      };
+      
+      // Move on hover AND on click attempts
+      continueButton.addEventListener('mouseenter', moveButton);
+      continueButton.addEventListener('mouseover', moveButton);
+      continueButton.addEventListener('click', () => {
+        if (moveCount >= maxMoves) {
+          overlay.remove();
+          updateSkipCount();
+          showPageContent();
+          setTimeout(() => startScrollTracking(), 1000);
+        } else {
+          moveButton();
+        }
+      });
+    } else {
+      // Math puzzle for high skip counts
+      const num1 = Math.floor(Math.random() * 10) + 1;
+      const num2 = Math.floor(Math.random() * 10) + 1;
+      const answer = num1 + num2;
+      
+      continueButton.style.display = 'none';
+      
+      const puzzleDiv = document.createElement('div');
+      puzzleDiv.style.textAlign = 'center';
+      puzzleDiv.style.marginTop = '20px';
+      puzzleDiv.innerHTML = `
+        <p style="color: #ff4444; font-weight: bold; margin-bottom: 10px;">Solve this to prove you're not a mindless zombie:</p>
+        <p style="font-size: 18px; margin-bottom: 10px;">${num1} + ${num2} = ?</p>
+        <input type="number" id="math-answer" style="padding: 8px; border: 2px solid #ddd; border-radius: 4px; width: 80px; text-align: center; font-size: 16px;" placeholder="?"><br>
+        <button id="submit-answer" style="margin-top: 10px; padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">Submit</button>
+        <p id="wrong-answer" style="color: #ff4444; font-size: 12px; margin-top: 5px; display: none;">Wrong! Try again, genius. 🤦‍♂️</p>
+      `;
+      
+      continueButton.parentNode.appendChild(puzzleDiv);
+      
+      const submitButton = puzzleDiv.querySelector('#submit-answer');
+      const answerInput = puzzleDiv.querySelector('#math-answer');
+      const wrongMessage = puzzleDiv.querySelector('#wrong-answer');
+      
+      const checkAnswer = () => {
+        const userAnswer = parseInt(answerInput.value);
+        if (userAnswer === answer) {
+          overlay.remove();
+          updateSkipCount();
+          showPageContent();
+          setTimeout(() => startScrollTracking(), 1000);
+        } else {
+          wrongMessage.style.display = 'block';
+          answerInput.value = '';
+          answerInput.focus();
+          setTimeout(() => wrongMessage.style.display = 'none', 2000);
+        }
+      };
+      
+      submitButton.addEventListener('click', checkAnswer);
+      answerInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') checkAnswer();
+      });
+      
+      setTimeout(() => answerInput.focus(), 100);
+    }
   });
 };
 
